@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Employee Leave Form</title>
+<title>Add Leave | WBLMS v1.0<title>
 <style>
   body {
     font-family: "Segoe UI", Roboto, sans-serif;
@@ -123,6 +123,7 @@ table {
   border-radius: 8px;
   overflow: hidden;
   table-layout: auto;     /* Let table adjust naturally */
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
 }
 
 
@@ -235,7 +236,7 @@ table {
 </head>
 <body>
 
-<h2 style ='color: darkblue; ';>Web-Based Leave Management System</h2>
+<h4 style ='color: darkblue; ';>Web-Based Leave Management System</h4>
 <h6 style='text-align: center; margin-top: 0px; padding: 0;';>Sub-Module for HRIS alpha version 1.0.0 - by Paul Justine Posas</h6>
 
 <div class="layout">
