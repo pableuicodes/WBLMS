@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employee Leave Form</title>
+<style>
+  body {
+    font-family: "Segoe UI", Roboto, sans-serif;
+    background: #f3f6fa;
+    margin: 0;
+    padding: 20px;
+    color: #333;
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+  }
+
+  /* Layout: 25% form, 75% table */
+  .form-container {
+    width: 25%;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 20px;
+  }
+
+  .table-container {
+    width: 75%;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 10px;
+    overflow-x: auto;
+  }
+
+  h2 {
+    text-align: center;
+    color: #004080;
+  }
+
+  label {
+    display: block;
+    margin-top: 12px;
+    font-weight: 600;
+  }
+
+  input, select, button {
+    width: 100%;
+    padding: 8px 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+
+  button {
+    background: #0078d7;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+
+  button:hover {
+    background: #005fa3;
+  }
+
+  /* Employee Search styling */
+  .search-box {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  ul.suggestions {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 1px solid #ccc;
+    border-top: none;
+    max-height: 150px;
+    overflow-y: auto;
+    position: absolute;
+    width: calc(100% - 22px);
+    background: #fff;
+    z-index: 10;
+  }
+
+  ul.suggestions li {
+    padding: 8px 10px;
+    cursor: pointer;
+  }
+
+  ul.suggestions li:hover {
+    background-color: #0078d7;
+    color: white;
+  }
+
+  .search-container {
+    position: relative;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  table th, table td {
+    border: 1px solid #ccc;
+    padding: 6px;
+    text-align: center;
+  }
+
+  table th {
+    background: #0078d7;
+    color: #fff;
+  }
+
+  .add-btn {
+    background: #0078d7;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+
+  .add-btn:hover {
+    background: #005fa3;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== LEFT FORM ===================== -->
+<div class="form-container">
+  <h2>Employee Leave Form</h2>
+
+  <div class="search-container">
+    <label for="employeeSearch">Search Employee (Name):</label>
+    <div class="search-box">
+      <input type="text" id="employeeSearch" placeholder="Type employee name...">
+      <button id="searchBtn" type="button">Search</button>
+    </div>
+    <ul class="suggestions" id="suggestions"></ul>
+  </div>
+
+  <label for="employeeNumber">Employee Number:</label>
+  <input type="text" id="employeeNumber" readonly>
+
+  <label for="leaveType">Type of Leave:</label>
+  <select id="leaveType">
+    <option value="">-- Select Leave Type --</option>
+    <option value="Vacation Leave">Vacation Leave</option>
+    <option value="Sick Leave">Sick Leave</option>
+    <option value="Maternity Leave">Maternity Leave</option>
+    <option value="Paternity Leave">Paternity Leave</option>
+  </select>
+
+  <label for="dateFrom">Inclusive Dates (From):</label>
+  <input type="date" id="dateFrom">
+
+  <label for="dateTo">Inclusive Dates (To):</label>
+  <input type="date" id="dateTo">
+
+  <label for="totalDays">Total Number of Days:</label>
+  <input type="number" id="totalDays" readonly>
+
+  <button class="add-btn" id="addToTable">Add to Table</button>
+</div>
+
+<!-- ===================== RIGHT TABLE ===================== -->
+<div class="table-container">
+  <table id="leaveTable">
+    <thead>
+      <tr>
+        <th>Employee No.</th>
+        <th>Employee Name</th>
+        <th>Type of Leave</th>
+        <th>Inclusive Period</th>
+        <th>Total Days</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+// ============ SEARCH FUNCTION ============
+const searchInput = document.getElementById("employeeSearch");
+const suggestions = document.getElementById("suggestions");
+const empNumInput = document.getElementById("employeeNumber");
+const searchBtn = document.getElementById("searchBtn");
+
+function searchEmployee(query) {
+  if (query.length < 2) {
+    suggestions.innerHTML = "";
+    return;
+  }
+
+fetch("search_employee.php?q=" + encodeURIComponent(query))
+    .then(response => response.json())
+    .then(data => {
+      suggestions.innerHTML = "";
+      if (data.length === 0) {
+        const li = document.createElement("li");
+        li.textContent = "No results found";
+        li.style.color = "#888";
+        suggestions.appendChild(li);
+        return;
+      }
+
+      data.forEach(emp => {
+        const li = document.createElement("li");
+        li.textContent = emp.fullname;
+        li.dataset.empnum = emp.empNum;
+        li.addEventListener("click", function() {
+          searchInput.value = emp.fullname;
+          empNumInput.value = emp.empNum;
+          suggestions.innerHTML = "";
+        });
+        suggestions.appendChild(li);
+      });
+    })
+    .catch(error => console.error("Error:", error));
+}
+
+searchInput.addEventListener("input", function() {
+  searchEmployee(this.value.trim());
+});
+searchBtn.addEventListener("click", function() {
+  searchEmployee(searchInput.value.trim());
+});
+document.addEventListener("click", function(e) {
+  if (!e.target.closest(".search-container")) suggestions.innerHTML = "";
+});
+
+// ============ ADD TO TABLE FUNCTION ============
+document.getElementById("addToTable").addEventListener("click", () => {
+  const empNum = document.getElementById("employeeNumber").value.trim();
+  const empName = document.getElementById("employeeSearch").value.trim();
+  const type = document.getElementById("leaveType").value.trim();
+  const from = document.getElementById("dateFrom").value;
+  const to = document.getElementById("dateTo").value;
+  const days = document.getElementById("totalDays").value || "0";
+
+  if (!empNum || !type || !from || !to) {
+    alert("Please fill in all required fields!");
+    return;
+  }
+
+  const tbody = document.querySelector("#leaveTable tbody");
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td>${empNum}</td>
+    <td>${empName}</td>
+    <td>${type}</td>
+    <td>${from} - ${to}</td>
+    <td>${days}</td>
+  `;
+  tbody.appendChild(tr);
+});
+</script>
+</body>
+</html>
